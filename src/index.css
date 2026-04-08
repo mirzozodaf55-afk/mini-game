@@ -1,13 +1,184 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'HemiHead';
+  src: url('../src/font/HEMI\ HEAD\ FORMULA55.TTF') format('truetype');
+  font-weight: normal;
+  font-style: normal;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: black;
+}
+
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tickets-grid {
+  width: 100%;
+  max-width: 350px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  justify-items: center;
+  margin: 0 auto 20px;
+}
+
+.ticket {
+  position: relative;
+  width: 90px;
+  height: 125px;
+  cursor: default;
+  overflow: hidden;
+  border-radius: 12px;
+  will-change: transform;
+}
+
+.ticket-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+.cover {
+  left: 0;
+  z-index: 2;
+}
+
+.ticket-ready {
+  cursor: pointer;
+}
+
+
+.get-freebet {
+    background: yellow;
+    border: 1px solid gray;
+    padding: clamp(8px, 2vw, 10px) clamp(16px, 4vw, 25px);
+    margin-top: 10 px;
+    color: black;
+    font-weight: 799;
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
+    cursor: pointer;
+    border-radius: 7px;
+    transition: all .6s ease;
+    width: max-content;
+}
+
+.pick-animate {
+    animation: pickAnimate .5s ease infinite alternate;
+}
+
+.fade-in {
+    animation: fade-in .3s ease;
+}
+
+@keyframes fade-in {
+    from {top: -40px; opacity: 0;}
+    to {top: 0px; opacity: 1;}
+}
+
+.move-up {
+    animation: move-up .3s ease;
+}
+
+@keyframes move-up {
+    from {bottom: -40px; opacity: 0;}
+    to {bottom: 0px; opacity: 1;}
+}
+
+.scale {
+    animation: scale .3s ease;
+}
+
+@keyframes scale {
+    from {transform: scale(.8); opacity: 0;}
+    to {transform: scale(1); opacity: 1;}
+}
+
+@keyframes pickAnimate {
+    0% {
+        transform: rotate(-5deg);
+    }
+    100% {
+        transform: rotate(-15deg);
+    }
+}
+
+.get-freebet:hover {
+    background: orange;
+    color: black;
+}
+
+img[alt="ball"] {
+    width: clamp(60px, 12vw, 115px);
+    height: clamp(60px, 12vw, 115px);
+}
+
+.balls {
+    position: absolute;
+    width: 60px;
+    /* transition: all 1s linear; */
+    height: 60px;
+    border: none;
+    outline: none;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: .4;
+}
+
+.ballsAnimate {
+    position: absolute;
+    width: 60px;
+    /* transition: all 1s linear; */
+    height: 60px;
+    border: none;
+    outline: none;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: .4;
+    animation: balls .8s linear infinite alternate;
+}
+
+@keyframes balls {
+    from {opacity: .1;}
+    to {opacity: .9;}
+}
+
+.moveLeft {
+    animation: moveToLeft 5s linear infinite;
+}
+
+@keyframes moveToLeft {
+    0% {
+        transform: translateX(0%,0,0);
+    }
+    100%{
+        transform: translateX(-50%);
+    }
+}
+
+

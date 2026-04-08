@@ -1,24 +1,21 @@
-import logo from './logo.svg';
-import './App.css';
+import Game from "./components/Game"
+import Pick from "./components/Pick"
+import Picked from "./components/Picked"
+import {Routes, Route} from "react-router-dom"
+import StartPage from "./components/StartPage";
 
-function App() {
+function App(props) {
+  
+      
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <Routes >
+        < Route path="/" element={<StartPage/>}/>
+          <Route path = "/game" element={<Game/>}/>
+          <Route path = "/cards" element={<Pick/>}/>
+          <Route path = "/pick" element={<Picked/>}/>
+      </Routes> 
+    </>
   );
 }
 
