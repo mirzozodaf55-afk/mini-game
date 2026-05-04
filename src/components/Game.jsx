@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import FireWorks from 'react-canvas-confetti/dist/presets/fireworks'
 import stadium from '../assets/стадион.png'
 import goalkeeper from "../assets/Вратарь2.png"
@@ -13,14 +12,24 @@ import text from '../assets/text.jpg'
 import ballSound from '../assets/sound/ball.mp3'
 import keep from '../assets/sound/keep.mp3'
 import HumenVoice from '../assets/sound/human-voice-goal.mp3'
+import orientationChange from '../helper'
 
 export default function Game() {
-    const navigate = useNavigate()
     function playAudio(url) {
         const audio = new Audio(url)
         audio.play()
     }
 
+    useEffect(() => {
+        const images = [goalkeeperUP, goalkeeperLeft, goalkeeperRight, goalkeeper]
+        images.forEach(src => {
+            const img = new Image()
+            img.src = src
+        })
+       setTimeout(() => {
+            orientationChange()
+        }, 1000)
+    },[])
 
     const goalKeeperPosition = useRef('center')
     const goalKeeperPosArr = [
@@ -44,74 +53,8 @@ export default function Game() {
     ]
 
     
-    useEffect(() => {
-        
-        const images = [goalkeeperUP, goalkeeperLeft, goalkeeperRight, goalkeeper]
-        images.forEach(src => {
-            const img = new Image()
-            img.src = src
-        })
-
-        const style = document.createElement('style')
-        style.id = 'orientation-style'
-        style.textContent = `
-            @keyframes rotateHint {
-                0%   { transform: rotate(0deg); }
-                25%  { transform: rotate(90deg); }
-                50%  { transform: rotate(90deg); }
-                75%  { transform: rotate(0deg); }
-                100% { transform: rotate(0deg); }
-            }
-        `
-        document.head.appendChild(style)
-
-        function handleOrientation() {
-            const isLandscape = window.innerWidth > window.innerHeight
-            let overlay = document.getElementById('orientation-overlay')
-
-            if (isLandscape) {
-                if (!overlay) {
-                    overlay = document.createElement('div')
-                    overlay.id = 'orientation-overlay'
-                    overlay.style.cssText = `
-                        position: fixed;
-                        top: 0; left: 0;
-                        width: 100%; height: 100%;
-                        background: rgba(0, 0, 0, 0.95);
-                        z-index: 99999;
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-                        color: white;
-                        font-family: Arial, sans-serif;
-                        text-align: center;
-                        gap: 12px;
-                    `
-                    overlay.innerHTML = `
-                        <div style="font-size: 58px; animation: rotateHint 2s infinite;">📱</div>
-                        <div style="font-size: 20px; font-weight: bold;">Переверните телефон</div>
-                        <div style="font-size: 14px; opacity: 0.6;">Игра доступна только в портретном режиме</div>
-                    `
-                    document.body.appendChild(overlay)
-                }
-            } else {
-                overlay?.remove()
-            }
-        }
-
-        handleOrientation()
-        window.addEventListener('orientationchange', handleOrientation)
-        window.addEventListener('resize', handleOrientation)
-
-        return () => {
-            window.removeEventListener('orientationchange', handleOrientation)
-            window.removeEventListener('resize', handleOrientation)
-            document.getElementById('orientation-overlay')?.remove()
-            document.getElementById('orientation-style')?.remove()
-        }
-    }, [])
-
+    
+orientationChange()
 
 
     const saved = useRef(true)
@@ -175,7 +118,7 @@ export default function Game() {
                 gkp.style.transition = 'transform 0.3s ease-out'
                 
 
-                if (getScore === 3 || getScore > 3) {
+                if (getScore >= 3) {
                     goalKeeperPosition.current = target.id
                     let gKP = goalKeeperPosArr.filter(g => g.namePos !== goalKeeperPosition.current)
                     gKP = gKP[Math.floor(Math.random() * gKP.length)]
@@ -187,14 +130,14 @@ export default function Game() {
                 } 
                 
                 goalKeeperPosArr.forEach(g => {
-                        goalKeeperPosition.current = g.namePos
-                        if (getScore < 3 && target.id === g.namePos) {
-                            gkp.src = g.picture
-                            gkp.style.transform = g.pos
-                            saved.current = true
-                            resetGame()
-                            playAudio(keep)
-                        }
+                    goalKeeperPosition.current = g.namePos
+                    if (getScore < 3 && target.id === g.namePos) {
+                        gkp.src = g.picture
+                        gkp.style.transform = g.pos
+                        saved.current = true
+                        resetGame()
+                        playAudio(keep)
+                    }
                 })                
 
                 document.querySelectorAll('.balls').forEach(b => b.style.display = 'none')
@@ -218,11 +161,11 @@ export default function Game() {
             requestAnimationFrame(animate)
             ball.style.width = ballWidth
             ball.style.height = ballHeight
+            target.parentElement.disabled = false
         }, 300)
     }
     
     function resetPositions() {
-    // сбрасываем вратаря
         const gkp = document.querySelector('img[alt="goalkeeper"]')
         if (gkp) {
             gkp.src = goalkeeper
@@ -230,7 +173,6 @@ export default function Game() {
             gkp.style.transition = 'none'
         }
 
-        // сбрасываем мяч
         const ball = document.querySelector('img[alt="ball"]')
         if (ball) {
             ball.style.transform = 'translateX(-50%)'
@@ -238,10 +180,7 @@ export default function Game() {
             ball.style.width = ''
         }
 
-        // показываем кнопки мячей
         document.querySelectorAll('.balls').forEach(b => b.style.display = 'block')
-
-        // сбрасываем флаги
         saved.current = true
         goalKeeperPosition.current = 'center'
         setIsFinished('start')
@@ -261,9 +200,7 @@ export default function Game() {
             zIndex: 9999,
             pointerEvents: 'none',
         }} 
-
-
-        autorun={{speed:1, duration: 3000}}/>
+        autorun = {{speed: 1, duration: 3000}}/>
         : null }
         { getScore === 1 && isFinished === 'end' ? 
         <>
@@ -277,7 +214,7 @@ export default function Game() {
             text={`у тебя осталась 2 попытка`}
             buttonText="Попробовать еще раз" status='continue' onContinue={resetPositions}
             setScore={setScore}          
-            setIsFinished={(val) => { setIsFinished(val) }}
+            setIsFinished={(val) => setIsFinished(val) }
             /> 
         </>
         : 
@@ -294,7 +231,7 @@ export default function Game() {
             buttonText="Решающий удар!" status='continue' 
             onContinue={resetPositions}
             setScore={setScore}          
-            setIsFinished={(val) => { setIsFinished(val) }}
+            setIsFinished={(val) => setIsFinished(val)}
             /> 
         </>
         : 
@@ -302,7 +239,7 @@ export default function Game() {
         <NotifyModal title='Поздравляем!' 
         text={`получи свой долгожданный бонус`}
         buttonText="Выбрать свой бонус" status='end' onContinue={resetPositions}
-        setIsFinished={(val) => { setIsFinished(val) }}
+        setIsFinished={(val) =>  setIsFinished(val)}
         setScore={setScore}
         /> : null}
 

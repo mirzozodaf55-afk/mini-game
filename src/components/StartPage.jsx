@@ -4,9 +4,9 @@ import Ball from "../assets/Ball.png"
 import gates from "../assets/Ворота.png"
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import Music from "../assets/music.mp3"
 import text from "../assets/text.jpg"
 import { clips } from '../managers/audio'
+import orientationChange from '../helper';
 
 export default function StartPage() {
     const  getScore = JSON.parse(sessionStorage.getItem('score')) || 0
@@ -21,74 +21,16 @@ export default function StartPage() {
     ]
 
     
-
+    
     useEffect(() => {
-
         clips.bgMusic.play();
         clips.bgMusic.on('playerror', (id, error) => {
             console.log("Autoplay was prevented:", error.message);
         });
-
-        document.body.style.overflow = 'hidden'
-        const style = document.createElement('style')
-        style.id = 'orientation-style'
-        style.textContent = `
-            @keyframes rotateHint {
-                0%   { transform: rotate(0deg); }
-                25%  { transform: rotate(90deg); }
-                50%  { transform: rotate(90deg); }
-                75%  { transform: rotate(0deg); }
-                100% { transform: rotate(0deg); }
-            }
-        `
-        document.head.appendChild(style)
-
-        function handleOrientation() {
-            const isLandscape = window.innerWidth > window.innerHeight
-            let overlay = document.getElementById('orientation-overlay')
-
-            if (isLandscape) {
-                if (!overlay) {
-                    overlay = document.createElement('div')
-                    overlay.id = 'orientation-overlay'
-                    overlay.style.cssText = `
-                        position: fixed;
-                        top: 0; left: 0;
-                        width: 100%; height: 100%;
-                        background: rgba(0, 0, 0, 0.95);
-                        z-index: 99999;
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-                        color: white;
-                        font-family: Arial, sans-serif;
-                        text-align: center;
-                        gap: 12px;
-                    `
-                    overlay.innerHTML = `
-                        <div style="font-size: 58px; animation: rotateHint 2s infinite;">📱</div>
-                        <div style="font-size: 20px; font-weight: bold;">Переверните телефон</div>
-                        <div style="font-size: 14px; opacity: 0.6;">Игра доступна только в портретном режиме</div>
-                    `
-                    document.body.appendChild(overlay)
-                }
-            } else {
-                overlay?.remove()
-            }
-        }
-
-        handleOrientation()
-        window.addEventListener('orientationchange', handleOrientation)
-        window.addEventListener('resize', handleOrientation)
-        console.log('mounted')
-        return () => {
-            window.removeEventListener('orientationchange', handleOrientation)
-            window.removeEventListener('resize', handleOrientation)
-            document.getElementById('orientation-overlay')?.remove()
-            document.getElementById('orientation-style')?.remove()
-        }
-    }, [])
+        setTimeout(() => {
+            orientationChange()
+        }, 1000)
+    },[])
 
     return (
         <>

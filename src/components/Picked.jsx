@@ -1,8 +1,11 @@
 import FireWorks from 'react-canvas-confetti/dist/presets/fireworks'
+import prizeData from "../data/icons";
+
 
 export default function Picked(){
-    const cardUrl = JSON.parse(sessionStorage.getItem('prize'))
-   
+    let cardUrl = JSON.parse(localStorage.getItem('data'))
+   let image = prizeData.find(p => p.name.includes(cardUrl.sum))
+        
         
     return (
         <>
@@ -21,19 +24,20 @@ export default function Picked(){
                 
                 <div className="fade-in relative top-[0px]">
                     <h1 className=" font-['HemiHead'] text-center text-white text-[1.8rem]">Поздравляем!</h1>
-                    <p className="font-['HemiHead'] text-white text-center leading-[15px]" style={{fontWeight: 100}}>Вы получили <span className='text-[orange]'>{cardUrl.name.toUpperCase()}</span> фрибетов.<br/>Для активации нажмите на кнопку</p>
+                    <p className="font-['HemiHead'] text-white text-center leading-[15px]" style={{fontWeight: 100}}>Вы получили <span className='text-[orange]'>{image.name.toUpperCase()}</span> фрибетов.<br/>Для активации нажмите на кнопку</p>
                 </div>
-                <div className="scale w-[200px] h-[300px] rotate-[-15deg]">
-                    <img src={cardUrl.image} className="pick-animate object-contain w-full
+                <div className="scale w-[200px] h-[300px] rotate-[-15deg]" style={{color:"white"}}>
+                    <img src={image.img} className="pick-animate object-contain w-full
                      h-full" alt="Picked Card" />
+                     
                 </div>
-
-                <button onClick=
-                {()=> window.location.replace('https://formula55.tj/sign-up')}
-                 className="move-up bg-white text-black 
-                 font-bold py-2 relative px-4 rounded">
-                    Активировать фрибет
-                </button>
+                    <div>{cardUrl.win_id}</div>
+                <a 
+                href={`https://formula55.tj/sign-up${cardUrl.redirect_url}`}
+                className="move-up bg-white text-black font-bold py-2 relative px-4 rounded"
+                >
+                Активировать фрибет
+                </a>
             </div>
         </>
     )

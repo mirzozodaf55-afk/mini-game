@@ -1,86 +1,32 @@
 import {useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import returnCards from "../assets/icons/return-cards.svg";
+import rotateCards from "../assets/icons/rotate-cards.svg";
 import prizeData from "../data/icons";
+import orientationChange from "../helper";
 
 export default function Pick() {
-
-  useEffect(() => {
-
-        const style = document.createElement('style')
-        style.id = 'orientation-style'
-        style.textContent = `
-            @keyframes rotateHint {
-                0%   { transform: rotate(0deg); }
-                25%  { transform: rotate(90deg); }
-                50%  { transform: rotate(90deg); }
-                75%  { transform: rotate(0deg); }
-                100% { transform: rotate(0deg); }
-            }
-        `
-        document.head.appendChild(style)
-
-        function handleOrientation() {
-            const isLandscape = window.innerWidth > window.innerHeight
-            let overlay = document.getElementById('orientation-overlay')
-
-            if (isLandscape) {
-                if (!overlay) {
-                    overlay = document.createElement('div')
-                    overlay.id = 'orientation-overlay'
-                    overlay.style.cssText = `
-                        position: fixed;
-                        top: 0; left: 0;
-                        width: 100%; height: 100%;
-                        background: rgba(0, 0, 0, 0.95);
-                        z-index: 99999;
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-                        color: white;
-                        font-family: Arial, sans-serif;
-                        text-align: center;
-                        gap: 12px;
-                    `
-                    overlay.innerHTML = `
-                        <div style="font-size: 58px; animation: rotateHint 2s infinite;">📱</div>
-                        <div style="font-size: 20px; font-weight: bold;">Переверните телефон</div>
-                        <div style="font-size: 14px; opacity: 0.6;">Игра доступна только в портретном режиме</div>
-                    `
-                    document.body.appendChild(overlay)
-                }
-            } else {
-                overlay?.remove()
-            }
-        }
-
-        handleOrientation()
-        window.addEventListener('orientationchange', handleOrientation)
-        window.addEventListener('resize', handleOrientation)
-
-        return () => {
-            window.removeEventListener('orientationchange', handleOrientation)
-            window.removeEventListener('resize', handleOrientation)
-            document.getElementById('orientation-overlay')?.remove()
-            document.getElementById('orientation-style')?.remove()
-        }
-    }, [])
-
   const navigateTo = useNavigate();
+  const [isStarted, setIsStarted] = useState(localStorage.getItem('isStarted') || false);
+
   const cardRefs = useRef([]);
   const containerRef = useRef(null);
-
   const [prizes, setPrizes] = useState(
     shuffleArray(prizeData).map((item, index) => ({ id: index + 1, image: item.img, name: item.name }))
   );
-
-  const [isStarted, setIsStarted] = useState(false);
+  const [getPrize, setGetPrize] = useState(localStorage.getItem('gotPrize') || false)
   const [isShuffling, setIsShuffling] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [phase, setPhase] = useState("idle");
   const [offsets, setOffsets] = useState([]);
+
+  useEffect(() => {
+    setTimeout(() => {
+            orientationChange()
+        }, 1000)
+  },[])
+
+
 
   function shuffleArray(array) {
     const arr = [...array];
@@ -91,9 +37,29 @@ export default function Pick() {
     return arr;
   }
 
+  async function getTicket(url){
+    let result;
+    try {
+      const responce = await fetch(url, {method: 'POST',
+        headers: {"Content-Type": 'application/json'},
+        body: JSON.stringify({type: 'freebet', game: 'penalty'})
+      })
+
+      if (!responce.ok) {
+        throw new Error("error " + responce.status);
+      } else {
+        result = await responce.json()
+      }
+    } catch(err) {
+      console.error(err)
+    }
+    return result
+  }
+
   function startShuffle() {
     if (isShuffling || isStarted) return;
-
+    
+    
     const container = containerRef.current.getBoundingClientRect();
     const centerX = container.left + container.width / 2;
     const centerY = container.top + container.height / 2;
@@ -110,15 +76,13 @@ export default function Pick() {
     });
 
     setOffsets(newOffsets);
-    setIsStarted(true);
-    setIsReady(false);
+    setIsReady(true);
     setIsShuffling(true);
 
-    // 1. Собираем в центр
     setPhase("gather");
 
-    setTimeout(() => {
-      // 2. Перемешиваем в центре несколько раз (невидимо для юзера)
+    setTimeout(async () => {
+      
       let count = 0;
       const interval = setInterval(() => {
         count++;
@@ -126,26 +90,34 @@ export default function Pick() {
 
         if (count >= 5) {
           clearInterval(interval);
-
-          // 3. Разлетаются по новым позициям
           setTimeout(() => {
             setPhase("spread");
 
             setTimeout(() => {
               setPhase("idle");
               setIsShuffling(false);
-              setIsReady(true);
+              setIsStarted(true);
+              
             }, 500);
           }, 100);
         }
-      }, 120); // каждые 120мс перемешиваем
-    }, 550); // ждём пока соберутся
+      }, 120);
+    }, 550); 
   }
-
-  function pickPrize(prize) {
+  async function pickPrize(prize) {
     if (!isReady || isShuffling) return;
-    sessionStorage.setItem("prize", JSON.stringify(prize));
-    navigateTo("/pick");
+    const ticket = await getTicket('/api/games/win')
+    localStorage.setItem("data", JSON.stringify(ticket));
+    localStorage.setItem('isStarted', isStarted)
+    setGetPrize(true)
+    localStorage.setItem('gotPrize', getPrize)
+    if (typeof ticket !== undefined && ticket) {
+      navigateTo("/pick");
+    } else {
+      setGetPrize(false)
+      setIsReady(false)
+      setIsStarted(false)
+    }
   }
 
   function getAnimate(index) {
@@ -179,20 +151,29 @@ export default function Pick() {
 
   return (
     <>
-      <div className="flex w-full justify-center mb-[20px]">
-        <h1
+       <div className="flex w-full justify-center mb-[20px]">
+         {isStarted && !getPrize ? <h1
           style={{ fontFamily: "HemiHead", textAlign: "center" }}
           className="inline leading-[35px] text-[white] text-[1.8rem] mx-[auto] w-[max-content]"
         >
           Выберите свой
           <br />
           счастливый билет
+        </h1>:
+        <h1
+          style={{ fontFamily: "HemiHead", textAlign: "center" }}
+          className="inline leading-[35px] text-[white] text-[1.8rem] mx-[auto] w-[max-content]"
+        >
+          Вы уже получили
+          <br />
+          свой приз!
         </h1>
+        }
       </div>
 
       <div className="container overflow-hidden" ref={containerRef}>
         <div className="tickets-grid">
-          {prizes.map((prize, index) => (
+          {getPrize || prizes.map((prize, index) => (
             <motion.div
               key={prize.id}
               layout
@@ -205,33 +186,21 @@ export default function Pick() {
               whileTap={isReady ? { scale: 0.97 } : {}}
             >
               <img
-                src={prize.image}
+                src={!isReady && !isStarted ? prize.image: rotateCards}
                 alt={`Prize ${index + 1}`}
                 className="ticket-image"
               />
 
-              <div
-                className="cover absolute inset-0 w-full h-full"
-                style={{
-                  top: isStarted ? "0%" : "100%",
-                  transition: "top 0.35s ease",
-                }}
-              >
-                <img
-                  src={returnCards}
-                  alt="Return Cards"
-                  className="w-full h-full object-contain"
-                />
-              </div>
+              
             </motion.div>
           ))}
         </div>
 
-        {!isStarted && (
+        {!isStarted ? (
           <button className="get-freebet" onClick={startShuffle}>
             Получить фрибет
           </button>
-        )}
+        ):null}
       </div>
     </>
   );
