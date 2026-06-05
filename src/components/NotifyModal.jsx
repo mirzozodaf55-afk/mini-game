@@ -5,10 +5,13 @@ export default function NotifyModal(props){
         function Continue() {
             sessionStorage.setItem('score', 0)
             sessionStorage.setItem('is-finished', JSON.stringify('start'))
-            let isStarted = localStorage.getItem('isStarted') || false, getPrize = localStorage.getItem('gotPrize') || false
+            let isStarted = JSON.parse(localStorage.getItem('isStarted') || false),
+            getPrize = JSON.parse(localStorage.getItem('gotPrize') || false)    
             props.setScore(0)
-            props.setIsFinished('start')        
-            if (isStarted && !getPrize) {
+            props.setIsFinished('start') 
+            console.log(isStarted, getPrize);
+                   
+            if (!isStarted && !getPrize) {
                 navigateTo('/cards')
             } else navigateTo('/pick')
         }

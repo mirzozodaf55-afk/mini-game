@@ -7,7 +7,7 @@ import orientationChange from "../helper";
 
 export default function Pick() {
   const navigateTo = useNavigate();
-  const [isStarted, setIsStarted] = useState(localStorage.getItem('isStarted') || false);
+  const [isStarted, setIsStarted] = useState(JSON.parse(localStorage.getItem('isStarted')) || false);
 
   const cardRefs = useRef([]);
   const containerRef = useRef(null);
@@ -19,6 +19,9 @@ export default function Pick() {
   const [isReady, setIsReady] = useState(false);
   const [phase, setPhase] = useState("idle");
   const [offsets, setOffsets] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const APP_URL = process.env.REACT_APP_MINI_GAMES_APP
 
   useEffect(() => {
     setTimeout(() => {
@@ -37,23 +40,42 @@ export default function Pick() {
     return arr;
   }
 
-  async function getTicket(url){
-    let result;
-    try {
-      const responce = await fetch(url, {method: 'POST',
-        headers: {"Content-Type": 'application/json'},
-        body: JSON.stringify({type: 'freebet', game: 'penalty'})
-      })
+  async function getTicket(url) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-      if (!responce.ok) {
-        throw new Error("error " + responce.status);
-      } else {
-        result = await responce.json()
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ type: "freebet", game: "penalty" }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error("HTTP error " + response.status);
       }
-    } catch(err) {
-      console.error(err)
+
+      const data = await response.json();
+      return { success: true, data };
+
+    } catch (err) {
+      clearTimeout(timeoutId);
+
+      if (err.name === "AbortError") {
+        return { success: false, error: "TIMEOUT" };
+      }
+
+      if (err instanceof TypeError) {
+        return { success: false, error: "NETWORK_ERROR" };
+      }
+
+      return { success: false, error: err.message };
     }
-    return result
   }
 
   function startShuffle() {
@@ -82,7 +104,6 @@ export default function Pick() {
     setPhase("gather");
 
     setTimeout(async () => {
-      
       let count = 0;
       const interval = setInterval(() => {
         count++;
@@ -97,7 +118,6 @@ export default function Pick() {
               setPhase("idle");
               setIsShuffling(false);
               setIsStarted(true);
-              
             }, 500);
           }, 100);
         }
@@ -105,18 +125,28 @@ export default function Pick() {
     }, 550); 
   }
   async function pickPrize(prize) {
-    if (!isReady || isShuffling) return;
-    const ticket = await getTicket('/api/games/win')
-    localStorage.setItem("data", JSON.stringify(ticket));
-    localStorage.setItem('isStarted', isStarted)
-    setGetPrize(true)
-    localStorage.setItem('gotPrize', getPrize)
-    if (typeof ticket !== undefined && ticket) {
+    if (!isReady || isShuffling || loading) return;
+
+    setLoading(true);
+    setError(null);
+
+    const ticket = await getTicket(`${APP_URL}/api/games/win`);
+
+    setLoading(false);
+
+    if (ticket && ticket.data) {
+      localStorage.setItem("data", JSON.stringify(ticket.data));
+      localStorage.setItem('isStarted', true);
+      localStorage.setItem('gotPrize', true);
       navigateTo("/pick");
     } else {
-      setGetPrize(false)
-      setIsReady(false)
-      setIsStarted(false)
+      if (ticket.error === "TIMEOUT") {
+        setError("Превышено время ожидания. Проверьте соединение.");
+      } else if (ticket.error === "NETWORK_ERROR") {
+        setError("Нет соединения с сервером. Проверьте интернет.");
+      } else {
+        setError("Ошибка сервера. Попробуйте снова.");
+      }
     }
   }
 
@@ -152,28 +182,31 @@ export default function Pick() {
   return (
     <>
        <div className="flex w-full justify-center mb-[20px]">
-         {isStarted && !getPrize ? <h1
+         {<h1
           style={{ fontFamily: "HemiHead", textAlign: "center" }}
           className="inline leading-[35px] text-[white] text-[1.8rem] mx-[auto] w-[max-content]"
         >
           Выберите свой
           <br />
           счастливый билет
-        </h1>:
-        <h1
-          style={{ fontFamily: "HemiHead", textAlign: "center" }}
-          className="inline leading-[35px] text-[white] text-[1.8rem] mx-[auto] w-[max-content]"
-        >
-          Вы уже получили
-          <br />
-          свой приз!
         </h1>
         }
       </div>
 
+      {error && (
+        <div className="flex justify-center mb-[10px]">
+          <p className="text-[orange] font-['HemiHead'] text-center text-[0.85rem] px-4">
+            {error}
+          </p>
+        </div>
+      )}
+
       <div className="container overflow-hidden" ref={containerRef}>
-        <div className="tickets-grid">
-          {getPrize || prizes.map((prize, index) => (
+        <div
+          className="tickets-grid"
+          style={{ opacity: loading ? 0.5 : 1, pointerEvents: loading ? "none" : "auto" }}
+        >
+          {!getPrize && prizes.map((prize, index) => (
             <motion.div
               key={prize.id}
               layout
@@ -182,19 +215,23 @@ export default function Pick() {
               onClick={() => pickPrize(prize)}
               animate={getAnimate(index)}
               transition={getTransition()}
-              whileHover={isReady ? { scale: 1.04, y: -4 } : {}}
-              whileTap={isReady ? { scale: 0.97 } : {}}
+              whileHover={isReady && !loading ? { scale: 1.04, y: -4 } : {}}
+              whileTap={isReady && !loading ? { scale: 0.97 } : {}}
             >
               <img
                 src={!isReady && !isStarted ? prize.image: rotateCards}
                 alt={`Prize ${index + 1}`}
                 className="ticket-image"
               />
-
-              
             </motion.div>
           ))}
         </div>
+
+        {loading && (
+          <div className="flex justify-center mt-[15px]">
+            <p className="text-white font-['HemiHead'] text-[0.9rem]">Загрузка...</p>
+          </div>
+        )}
 
         {!isStarted ? (
           <button className="get-freebet" onClick={startShuffle}>
