@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import FireWorks from 'react-canvas-confetti/dist/presets/fireworks'
-import stadium from '../assets/стадион.png'
-import goalkeeper from "../assets/Вратарь2.png"
-import goalkeeperUP from "../assets/upKeeper.png"
-import goalkeeperRight from "../assets/rightKeeper.png"
-import goalkeeperLeft from "../assets/leftKeeper.png"
-import gates from "../assets/Ворота.png"
+import stadium from '../assets/stadion.png'
+import goalkeeper from "../assets/Вратарь.webp"
+import goalkeeperUP from "../assets/Вратарь.webp"
+import goalkeeperRight from "../assets/Вратарь.webp"
+import goalkeeperLeft from "../assets/Вратарь.webp"
+import gates from "../assets/Ворота.svg"
 import Ball from "../assets/Ball.png"
 import NotifyModal from './NotifyModal'
 import text from '../assets/text.jpg'
@@ -20,24 +20,13 @@ export default function Game() {
         audio.play()
     }
 
-    useEffect(() => {
-        const images = [goalkeeperUP, goalkeeperLeft, goalkeeperRight, goalkeeper]
-        images.forEach(src => {
-            const img = new Image()
-            img.src = src
-        })
-       setTimeout(() => {
-            orientationChange()
-        }, 1000)
-    },[])
-
     const goalKeeperPosition = useRef('center')
     const goalKeeperPosArr = [
-    {namePos:"top", picture: goalkeeperUP, pos:'translateX(-50%) translateY(-45px)'},
-    {namePos:"topLeft", picture: goalkeeperLeft, pos:'translateX(-130%) translateY(-75px)'},
-    {namePos:"topRight", picture: goalkeeperRight, pos:'translateX(30%) translateY(-75px)'},
-    {namePos:"bottomLeft", picture: goalkeeperLeft, pos:'translateX(-140%) translateY(0px) rotate(-85deg)'},
-    {namePos:"bottomRight", picture: goalkeeperRight, pos:'translateX(40%) translateY(0px) rotate(85deg)'},
+    {namePos:"top", picture: goalkeeperUP, pos:'translateX(-50%) translateY(-50px)'},
+    {namePos:"topLeft", picture: goalkeeperLeft, pos:'translateX(-220%) translateY(-55px) rotate(-30deg)'},
+    {namePos:"topRight", picture: goalkeeperRight, pos:'translateX(120%) translateY(-55px) rotate(30deg)'},
+    {namePos:"bottomLeft", picture: goalkeeperLeft, pos:'translateX(-235%) translateY(55px) rotate(-115deg)'},
+    {namePos:"bottomRight", picture: goalkeeperRight, pos:'translateX(145%) translateY(55px) rotate(115deg)'},
 ]
 
     let [getScore, setScore] = useState(() => JSON.parse(sessionStorage.getItem('score')) || 0) 
@@ -45,11 +34,11 @@ export default function Game() {
     const texts = [text, text, text, text, text, text, text, text]
     
     const ballButtons = [
-        { position: { bottom: '34%', left: '10%' }, name: 'bottomLeft' },
-        { position: { top: '9%', left: '10%' }, name: 'topLeft' },
-        { position: { top: '9%', left: '50%', transform: 'translateX(-50%)' }, name: 'top' },
-        { position: { top: '9%', right: '10%' }, name: 'topRight' },
-        { position: { bottom: '34%', right: '10%' }, name: 'bottomRight' },
+        { position: { top: '41%', left: '-4%' }, name: 'bottomLeft' },
+        { position: { top: '4%', left: '2%' }, name: 'topLeft' },
+        { position: { top: '4%', left: '50%', transform: 'translateX(-50%)' }, name: 'top' },
+        { position: { top: '4%', right: '2%' }, name: 'topRight' },
+        { position: { top: '41%', right: '-4%' }, name: 'bottomRight' },
     ]
 
     
@@ -206,7 +195,7 @@ orientationChange()
         <>
             <h1 className='motivation-text text-center w-[max-content] 
             text-[rgba(255,255,255,0.8)] absolute top-[20px]
-            left-[50%] text-[1.3rem] translate-x-[-50%]
+            left-[50%] top-[20px] text-[1.3rem] translate-x-[-50%]
             mx-[auto] font-["HemiHead"]'>    
             почти получилось!<br /> Вратарь сегодня в <br/> ударе, но ты хитрее.
             </h1>
@@ -222,7 +211,7 @@ orientationChange()
         <>
         <h1 className='motivation-text text-center w-[max-content] 
             text-[rgba(255,255,255,0.8)] absolute top-[20px]
-            left-[50%] text-[1.3rem] translate-x-[-50%]
+            left-[50%] top-[20px] text-[1.3rem] translate-x-[-50%]
             mx-[auto] font-["HemiHead"]'>    
             Сделай это! Отправь <br/> мяч прямо в сетку!
             </h1>
@@ -252,6 +241,7 @@ orientationChange()
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
                 width: '100vw',
+                overflow: 'hidden',
                 minHeight: '100vh',
                 height: '100vh',
                 display: 'flex',
@@ -262,7 +252,7 @@ orientationChange()
         {getScore === 0 && isFinished === 'start' ? 
         <h1 className='motivation-text text-center w-[max-content] 
         text-[rgba(255,255,255,0.8)] absolute top-[20px]
-        left-[50%] text-[1.3rem] translate-x-[-50%]
+        left-[50%] top-[20px] text-[1.3rem] translate-x-[-50%]
         mx-[auto] font-["HemiHead"]'>    
         выбери точку удара <br /> и покажи, на что ты <br/> способен
         </h1>: null }
@@ -270,22 +260,22 @@ orientationChange()
         {getScore === 1 && isFinished === 'start' ?
         <h1 className='motivation-text text-center w-[max-content] 
         text-[rgba(255,255,255,0.8)] absolute top-[20px]
-        left-[50%] text-[1.3rem] translate-x-[-50%]
+        left-[50%] top-[20px] text-[1.3rem] translate-x-[-50%]
         mx-[auto] font-["HemiHead"]'>
         Смени тактику! <br/> Целься в девятку </h1> 
         :null} 
         {getScore === 2 && isFinished === 'start' ?
         <h1 className='motivation-text text-center w-[max-content] 
         text-[rgba(255,255,255,0.8)] absolute top-[20px]
-        left-[50%] text-[1.3rem] translate-x-[-50%]
+        left-[50%] top-[20px] text-[1.3rem] translate-x-[-50%]
         mx-[auto] font-["HemiHead"]'>
-            Один точный удар отделяет <br /> тебя от награды. Не <br/> подведи трибуны!
+            Один точный удар отделяет <br /> тебя от награды.
         </h1>:null}
 
         {getScore === 3 && isFinished === 'end' ?
         <h1 className='motivation-text text-center w-[max-content] 
         text-[rgba(255,255,255,0.8)] absolute top-[50px]
-        left-[50%] text-[2rem] translate-x-[-50%]
+        left-[50%] top-[20px] text-[2rem] translate-x-[-50%]
         mx-[auto] font-["HemiHead"]'>
             ГООООЛ!
         </h1>
@@ -301,13 +291,13 @@ orientationChange()
                 }}
             >
                 <div className='absolute flex overflow-hidden w-[100vw]'  style={{
-                    bottom: 'clamp(45%, 7vh, 20%)', height: 'clamp(25px,5vh,40px)'}}>
-                    {texts.map((t, textKey) => (
-                        <img key={textKey} className='moveLeft' src={t} alt="text" />
-                    ))}
-                </div>
-                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                    <img src={ gates } alt="gates" style={{ width: '100%', height: '100%', display: 'block' }} />
+                        bottom: 'clamp(88%, 7vh, 20%)', height: 'clamp(20px,4vh,40px)'}}>
+                        {texts.map((t, textKey) => (
+                            <img key={textKey} className='moveLeft' src={t} alt="text" />
+                        ))}
+                    </div>
+                <div style={{ position: 'relative', bottom: '90px', width: '120%', height: '100%' }}>
+                    <img src={ gates } alt="gates" style={{ width: '120%', height: '100%', display: 'block', transform: 'scale(1.35)'}} />
 
                     {ballButtons.map((ball, x) => (
                         <button
@@ -318,8 +308,8 @@ orientationChange()
                             style={{
                                 position: 'absolute',
                                 ...ball.position,
-                                width: 'clamp(35px, 6vw, 72px)',
-                                height: 'clamp(35px, 6vw, 72px)',
+                                width: 'clamp(60px, 50vw, 90px)',
+                                height: 'clamp(29px, 5vw, 300px)',
                                 padding: 0,
                                 background: 'none',
                                 border: 'none',
@@ -336,10 +326,10 @@ orientationChange()
                     alt="goalkeeper"
                     style = {{
                         position: 'absolute',
-                        bottom: 'clamp(100px, 5vw, 120px)',
+                        bottom: 'clamp(300px, 5vw, 220px)',
                         left: '50%',
                         transform: 'translateX(-50%)',
-                        height: 'clamp(150px, 28vw, 280px)',
+                        height: 'clamp(50px, 10vw, 130px)',
                         objectFit: 'contain',
                         pointerEvents: 'none',
                     }}
@@ -350,10 +340,11 @@ orientationChange()
                     alt = "ball"
                     style = {{
                         position: 'absolute',
-                        bottom: 'clamp(-80px, -18vh, -190px)',
+                        bottom: 'clamp(90px, -18vh, -300px)',
                         left: '50%',
+                        width: '18%',
                         transform: 'translateX(-50%)',
-                        height: 'clamp(60px, 12vw, 115px)',
+                        height: 'clamp(80px, 13vw, 160px)',
                         objectFit: 'contain',
                         pointerEvents: 'none',
                     }}

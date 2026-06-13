@@ -9,7 +9,6 @@ export default function NotifyModal(props){
             getPrize = JSON.parse(localStorage.getItem('gotPrize') || false)    
             props.setScore(0)
             props.setIsFinished('start') 
-            console.log(isStarted, getPrize);
                    
             if (!isStarted && !getPrize) {
                 navigateTo('/cards')
@@ -35,9 +34,9 @@ export default function NotifyModal(props){
             left-0 right-0 top-0 bottom-0 bg-[rgba(0,0,0,0.2)] z-[10]
             flex justify-center
             ">
-                <div className="rounded-[15px] absolute bottom-[20px]
+                <div className="absolute bottom-0
                 flex flex-col items-center bg-[#2C2C2C] text-[white]
-                " style={{height: 'clamp(200px,10vh,300px)', width: 'clamp(350px,15vw, 450px)'}}>
+                " style={{height: 'clamp(200px,10vh,300px)', width: '100%', borderTopLeftRadius: '14px', borderTopRightRadius:'14px'}}>
                     <div className="m-[auto] w-full mb-[10px]
                      justify-around h-[80%] items-center
                      flex flex-col" style={{textAlign:'center'}}>

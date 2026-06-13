@@ -53,7 +53,7 @@ function reset() {
                 </div>
                 <a onClick={reset}
                 href={`https://formula55.tj/sign-up${cardUrl.redirect_url}`}
-                className="move-up bg-white text-black font-bold py-2 relative px-4 rounded"
+                    className="move-up bg-white text-black font-bold py-2 relative px-4 rounded"
                 >
                 Активировать фрибет
                 </a>

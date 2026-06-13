@@ -145,7 +145,7 @@ img[alt="ball"] {
     display: flex;
     justify-content: center;
     align-items: center;
-    opacity: .4;
+    opacity: .7;
 }
 
 .ballsAnimate {

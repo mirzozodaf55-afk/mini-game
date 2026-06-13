@@ -47,8 +47,10 @@ export default function Pick() {
     try {
       const response = await fetch(url, {
         method: "POST",
+        credentials: 'include',
         headers: {
           "Content-Type": "application/json",
+          'Accept': 'application/json',
         },
         body: JSON.stringify({ type: "freebet", game: "penalty" }),
         signal: controller.signal,
